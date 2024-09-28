@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New Item</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto; /* Centering the form */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%; /* Makes the button full-width */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            display: block; /* Makes the link a block for better spacing */
+            text-align: center;
+            margin-top: 10px; /* Margin above the link */
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Create New Item</h1>
+<form action="#" th:action="@{/lost-items}" th:object="${lostItem}" method="post">
+    <label for="itemName">Item Name:</label>
+    <input type="text" id="itemName" th:field="*{itemName}" required>
+
+    <label for="itemDescription">Description:</label>
+    <textarea id="itemDescription" th:field="*{itemDescription}" required></textarea>
+
+    <label for="itemKeywords">Keywords (separate with commas):</label>
+    <input type="text" id="itemKeywords" th:field="*{itemKeywords}" required>
+
+    <button type="submit">Create</button>
+    <a href="/lost-items">Cancel</a>
+</form>
+</body>
+</html>

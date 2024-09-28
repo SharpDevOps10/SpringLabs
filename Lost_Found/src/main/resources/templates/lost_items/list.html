@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lost Items List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .button-container {
+            display: flex; /* Используем Flexbox для выравнивания */
+            justify-content: space-between; /* Размещаем элементы по краям */
+            align-items: center; /* Выравниваем элементы по центру по вертикали */
+            margin-bottom: 20px; /* Отступ между кнопками и таблицей */
+        }
+
+        .create-button, .search-button {
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block; /* Делает кнопку блочной */
+        }
+
+        .create-button:hover, .search-button:hover {
+            background-color: #0056b3;
+        }
+
+        .search-form {
+            display: flex; /* Flexbox для формы поиска */
+            align-items: center; /* Выравниваем элементы по центру по вертикали */
+        }
+
+        .search-form input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 5px; /* Отступ между полем ввода и кнопкой поиска */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        li {
+            list-style-type: disc;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column; /* Упорядочиваем кнопки вертикально */
+            gap: 5px; /* Отступ между кнопками действий */
+        }
+
+        .action-button {
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: inline-block; /* Делает кнопку блочной */
+            width: 100%; /* Заставляем кнопки занимать полную ширину */
+            text-align: center; /* Центрируем текст */
+        }
+
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h1>Lost Items List</h1>
+<div class="button-container">
+    <a href="/lost-items/new" class="create-button">Create New Item</a>
+    <form action="/lost-items/search" method="get" class="search-form">
+        <label>
+            <input type="text" name="keywords" placeholder="Search by keywords" required>
+        </label>
+        <button type="submit" class="search-button">Search</button>
+    </form>
+</div>
+<table>
+    <thead>
+    <tr>
+        <th>Item Name</th>
+        <th>Description</th>
+        <th>Keywords</th>
+        <th>Contact Information</th>
+        <th>Location</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td th:text="${item.itemName}"></td>
+        <td th:text="${item.itemDescription}"></td>
+        <td>
+            <ul>
+                <li th:each="keyword : ${item.itemKeywords}" th:text="${keyword}"></li>
+            </ul>
+        </td>
+        <td th:text="${item.contactInformation != null ? item.contactInformation.firstName + ' ' + item.contactInformation.lastName + ' ' + item.contactInformation.phoneNumber + ' ' + item.contactInformation.email : 'No data'}"></td>
+        <td th:text="${item.location != null ? item.location.city + ', ' + item.location.address + ', ' + item.location.zipCode : 'No data'}"></td>
+        <td class="actions">
+            <div>
+                <a th:href="@{/contact-information/update/{itemName}(itemName=${item.itemName})}" class="action-button">Add Contact</a>
+                <a th:href="@{/locations/update/{itemName}(itemName=${item.itemName})}" class="action-button">Add Location</a>
+                <a th:href="@{/lost-items/edit/{itemName}(itemName=${item.itemName})}" class="action-button">Edit</a>
+                <a th:href="@{/lost-items/delete/{itemName}(itemName=${item.itemName})}" class="action-button" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

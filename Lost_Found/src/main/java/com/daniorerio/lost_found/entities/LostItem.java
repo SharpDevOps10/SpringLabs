@@ -7,12 +7,12 @@ public class LostItem {
     private String itemDescription;
     private List<String> itemKeywords;
     private ContactInformation contactInformation;
+    private Location location;
 
-    public LostItem(String itemName, String itemDescription, List<String> itemKeywords, ContactInformation contactInformation) {
+    public LostItem(String itemName, String itemDescription, List<String> itemKeywords) {
         this.itemName = itemName;
         this.itemDescription = itemDescription;
         this.itemKeywords = itemKeywords;
-        this.contactInformation = contactInformation;
     }
 
     public String getItemName() {
@@ -31,19 +31,28 @@ public class LostItem {
         this.itemDescription = itemDescription;
     }
 
+    public List<String> getItemKeywords() {
+        return itemKeywords;
+    }
+
     public void setItemKeywords(List<String> itemKeywords) {
         this.itemKeywords = itemKeywords;
     }
 
-    public List<String> getItemKeywords() {
-        return itemKeywords;
+    public ContactInformation getContactInformation() {
+        return contactInformation;
     }
 
     public void setContactInformation(ContactInformation contactInformation) {
         this.contactInformation = contactInformation;
     }
 
-    public ContactInformation getContactInformation() {
-        return contactInformation;
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 }
+

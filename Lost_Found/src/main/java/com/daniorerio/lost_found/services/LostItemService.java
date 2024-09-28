@@ -25,11 +25,23 @@ public class LostItemService {
         lostItemRepository.removeItem(lostItem);
     }
 
-    public List<LostItem> searchItems(String keyword) {
-        return lostItemRepository.findByKeyword(keyword);
+    public List<LostItem> searchItems(String itemName) {
+        return lostItemRepository.findByItemName(itemName);
     }
 
     public List<LostItem> listAllItems() {
         return lostItemRepository.findAllItems();
+    }
+
+    public void updateItem(LostItem updatedItem) {
+        List<LostItem> items = lostItemRepository.findByItemName(updatedItem.getItemName());
+        if (!items.isEmpty()) {
+            LostItem existingItem = items.get(0);
+            existingItem.setContactInformation(updatedItem.getContactInformation());
+        }
+    }
+
+    public List<LostItem> searchItemsByKeywords(String keywords) {
+        return lostItemRepository.findByItemKeywords(keywords);
     }
 }

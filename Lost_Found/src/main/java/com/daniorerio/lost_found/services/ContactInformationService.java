@@ -28,7 +28,7 @@ public class ContactInformationService {
         return contactInformationRepository.findByPhoneNumber(phoneNumber);
     }
 
-    public void deleteContactByPhoneNumber(String phoneNumber) {
+    public void deleteContactInformationByPhoneNumber(String phoneNumber) {
         contactInformationRepository.removeByPhoneNumber(phoneNumber);
     }
 }
