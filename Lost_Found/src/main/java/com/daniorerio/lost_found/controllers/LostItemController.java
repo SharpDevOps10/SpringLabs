@@ -3,6 +3,9 @@ package com.daniorerio.lost_found.controllers;
 import com.daniorerio.lost_found.entities.LostItem;
 import com.daniorerio.lost_found.services.LostItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +24,17 @@ public class LostItemController {
     }
 
     @GetMapping
-    public String listItems(Model model) {
-        List<LostItem> items = lostItemService.listAllItems();
-        model.addAttribute("items", items);
+    public String listItems(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<LostItem> itemsPage = lostItemService.listItemsWithPagination(pageable);
+
+        model.addAttribute("items", itemsPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", itemsPage.getTotalPages());
+
         return "lost_items/list";
     }
 
@@ -49,7 +60,7 @@ public class LostItemController {
         return "redirect:/lost-items";
     }
 
-    @PostMapping("/update")
+    @PatchMapping("/update")
     public String updateItem(@ModelAttribute LostItem lostItem) {
         List<LostItem> existingItems = lostItemService.searchItems(lostItem.getItemName());
         if (!existingItems.isEmpty()) {

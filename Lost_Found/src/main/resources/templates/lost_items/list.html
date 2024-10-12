@@ -135,17 +135,7 @@
                 <li th:each="keyword : ${item.itemKeywords}" th:text="${keyword}"></li>
             </ul>
         </td>
-        <td>
-          <span th:if="${item.contactInformation != null}">
-            <span th:text="${item.contactInformation.firstName}"></span>
-            <span th:text="${item.contactInformation.lastName}"></span>
-            <span th:text="${item.contactInformation.phoneNumber}"></span>
-            <span th:text="${item.contactInformation.email}"></span>
-          </span>
-            <span th:else>
-              No data
-            </span>
-        </td>
+        <td th:text="${item.contactInformation != null ? item.contactInformation.firstName + ' ' + item.contactInformation.lastName + ' ' + item.contactInformation.phoneNumber + ' ' + item.contactInformation.email : 'No data'}"></td>
         <td>
             <span th:switch="${item.location}">
                 <span th:case="null">No data</span>

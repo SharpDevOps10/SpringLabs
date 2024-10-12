@@ -3,6 +3,8 @@ package com.daniorerio.lost_found.services;
 import com.daniorerio.lost_found.entities.LostItem;
 import com.daniorerio.lost_found.repositories.LostItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,8 +31,8 @@ public class LostItemService {
         return lostItemRepository.findByItemName(itemName);
     }
 
-    public List<LostItem> listAllItems() {
-        return lostItemRepository.findAllItems();
+    public Page<LostItem> listItemsWithPagination(Pageable pageable) {
+        return lostItemRepository.findAllItemsPagination(pageable);
     }
 
     public void updateItem(LostItem updatedItem) {

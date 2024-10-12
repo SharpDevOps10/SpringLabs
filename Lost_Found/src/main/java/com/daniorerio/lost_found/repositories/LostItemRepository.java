@@ -1,6 +1,9 @@
 package com.daniorerio.lost_found.repositories;
 
 import com.daniorerio.lost_found.entities.LostItem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -20,8 +23,12 @@ public class LostItemRepository {
         lostItems.remove(lostItem);
     }
 
-    public List<LostItem> findAllItems() {
-        return lostItems;
+    public Page<LostItem> findAllItemsPagination(Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), lostItems.size());
+
+        List<LostItem> itemsPage = lostItems.subList(start, end);
+        return new PageImpl<>(itemsPage, pageable, lostItems.size());
     }
 
     public List<LostItem> findByItemName(String itemName) {

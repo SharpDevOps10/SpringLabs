@@ -69,6 +69,7 @@
 <body>
 <h1>Edit Item: <span th:text="${lostItem.itemName}"></span></h1>
 <form action="#" th:action="@{/lost-items/update}" th:object="${lostItem}" method="post">
+    <input type="hidden" name="_method" value="patch"/>
     <input type="hidden" th:field="*{itemName}"/>
 
     <label for="itemDescription">Description:</label>
