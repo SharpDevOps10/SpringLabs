@@ -19,8 +19,9 @@ public class LostItemService {
         this.lostItemRepository = lostItemRepository;
     }
 
-    public void createItem(LostItem lostItem) {
+    public LostItem createItem(LostItem lostItem) {
         lostItemRepository.addItem(lostItem);
+        return lostItem;
     }
 
     public void deleteItem(LostItem lostItem) {
