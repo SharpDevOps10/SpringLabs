@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/lost-items")
@@ -37,6 +38,18 @@ public class LostItemController {
         return ResponseEntity.ok(itemsPage);
     }
 
+    @Operation(summary = "Retrieve a lost item by ID",
+            description = "Returns the details of a lost item based on its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Item found successfully"),
+            @ApiResponse(responseCode = "404", description = "Item not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<LostItem> getItemById(@PathVariable Long id) {
+        Optional<LostItem> lostItem = lostItemService.findItemById(id);
+        return lostItem.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @Operation(summary = "Create a new lost item",
             description = "Creates a new lost item and returns it.")
     @ApiResponses(value = {
@@ -55,32 +68,34 @@ public class LostItemController {
             @ApiResponse(responseCode = "200", description = "Item successfully updated"),
             @ApiResponse(responseCode = "404", description = "Item not found")
     })
-    @PatchMapping("/update")
-    public ResponseEntity<LostItem> updateItem(@RequestBody LostItem lostItem) {
-        List<LostItem> existingItems = lostItemService.searchItems(lostItem.getItemName());
-        if (!existingItems.isEmpty()) {
-            LostItem existingItem = existingItems.getFirst();
-            existingItem.setItemDescription(lostItem.getItemDescription());
-            existingItem.setItemKeywords(lostItem.getItemKeywords());
-            lostItemService.updateItem(existingItem);
-            return ResponseEntity.ok(existingItem);
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<LostItem> updateItem(@PathVariable long id, @RequestBody LostItem lostItem) {
+        Optional<LostItem> existingItem = lostItemService.findItemById(id);
+        if (existingItem.isPresent()) {
+            LostItem updatedItem = existingItem.get();
+            updatedItem.setItemDescription(lostItem.getItemDescription());
+            updatedItem.setItemName(lostItem.getItemName());
+            updatedItem.setItemKeywords(lostItem.getItemKeywords());
+            updatedItem.setLocation(lostItem.getLocation());
+            updatedItem.setContactInformation(lostItem.getContactInformation());
+            lostItemService.updateItem(updatedItem);
+            return ResponseEntity.ok(updatedItem);
         }
         return ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "Delete a lost item",
-            description = "Deletes a lost item by its name.")
+            description = "Deletes a lost item by its id.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Item successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Item not found")
     })
-    @DeleteMapping("/delete/{itemName}")
-    public ResponseEntity<LostItem> deleteItem(@PathVariable("itemName") String itemName) {
-        List<LostItem> items = lostItemService.searchItems(itemName);
-        if (!items.isEmpty()) {
-            LostItem deletedItem = items.getFirst();
-            lostItemService.deleteItem(deletedItem);
-            return ResponseEntity.ok(deletedItem);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Optional<LostItem>> deleteItem(@PathVariable long id) {
+        Optional<LostItem> existingItem = lostItemService.findItemById(id);
+        if (existingItem.isPresent()) {
+            lostItemService.deleteItem(id);
+            return ResponseEntity.ok(existingItem);
         }
         return ResponseEntity.notFound().build();
     }

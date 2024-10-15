@@ -3,6 +3,10 @@ package com.daniorerio.lost_found.entities;
 import java.util.List;
 
 public class LostItem {
+    private static long idCounter = 0;
+
+    private final long id;
+
     private String itemName;
     private String itemDescription;
     private List<String> itemKeywords;
@@ -10,6 +14,7 @@ public class LostItem {
     private Location location;
 
     public LostItem(String itemName, String itemDescription, List<String> itemKeywords) {
+        this.id = ++idCounter;
         this.itemName = itemName;
         this.itemDescription = itemDescription;
         this.itemKeywords = itemKeywords;
@@ -53,6 +58,10 @@ public class LostItem {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public long getId() {
+        return id;
     }
 }
 

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -21,6 +22,12 @@ public class LostItemRepository {
 
     public void removeItem(LostItem lostItem) {
         lostItems.remove(lostItem);
+    }
+
+    public Optional<LostItem> findById(long id) {
+        return lostItems.stream()
+                .filter(item -> item.getId() == id)
+                .findFirst();
     }
 
     public Page<LostItem> findAllItemsPagination(Pageable pageable) {

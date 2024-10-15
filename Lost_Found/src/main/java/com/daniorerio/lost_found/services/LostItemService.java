@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LostItemService {
@@ -24,12 +25,16 @@ public class LostItemService {
         return lostItem;
     }
 
-    public void deleteItem(LostItem lostItem) {
-        lostItemRepository.removeItem(lostItem);
+    public void deleteItem(long id) {
+        lostItemRepository.findById(id).ifPresent(lostItemRepository::removeItem);
     }
 
     public List<LostItem> searchItems(String itemName) {
         return lostItemRepository.findByItemName(itemName);
+    }
+
+    public Optional<LostItem> findItemById(long id) {
+        return lostItemRepository.findById(id);
     }
 
     public Page<LostItem> listItemsWithPagination(Pageable pageable) {
@@ -37,11 +42,13 @@ public class LostItemService {
     }
 
     public void updateItem(LostItem updatedItem) {
-        List<LostItem> items = lostItemRepository.findByItemName(updatedItem.getItemName());
-        if (!items.isEmpty()) {
-            LostItem existingItem = items.get(0);
+        lostItemRepository.findById(updatedItem.getId()).ifPresent(existingItem -> {
             existingItem.setContactInformation(updatedItem.getContactInformation());
-        }
+            existingItem.setLocation(updatedItem.getLocation());
+            existingItem.setItemName(updatedItem.getItemName());
+            existingItem.setItemDescription(updatedItem.getItemDescription());
+            existingItem.setItemKeywords(updatedItem.getItemKeywords());
+        });
     }
 
     public List<LostItem> searchItemsByKeywords(String keywords) {
