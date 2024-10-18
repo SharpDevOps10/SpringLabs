@@ -205,3 +205,4 @@ public class LostItemRepository implements LostItemDao {
                 Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().createArrayOf("text", keywordList.toArray()));
     }
 }
+//
