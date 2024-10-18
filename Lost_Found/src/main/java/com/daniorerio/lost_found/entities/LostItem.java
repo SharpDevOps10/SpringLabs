@@ -3,9 +3,7 @@ package com.daniorerio.lost_found.entities;
 import java.util.List;
 
 public class LostItem {
-    private static long idCounter = 0;
-
-    private final long id;
+    private long id;
 
     private String itemName;
     private String itemDescription;
@@ -13,11 +11,15 @@ public class LostItem {
     private ContactInformation contactInformation;
     private Location location;
 
-    public LostItem(String itemName, String itemDescription, List<String> itemKeywords) {
-        this.id = ++idCounter;
+    public LostItem(long id, String itemName, String itemDescription, List<String> itemKeywords) {
+        this.id = id;
         this.itemName = itemName;
         this.itemDescription = itemDescription;
         this.itemKeywords = itemKeywords;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getItemName() {
@@ -60,8 +62,7 @@ public class LostItem {
         this.location = location;
     }
 
-    public long getId() {
-        return id;
+    public void setId(long id) {
+        this.id = id;
     }
 }
-

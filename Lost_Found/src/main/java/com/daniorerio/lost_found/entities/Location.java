@@ -1,14 +1,21 @@
 package com.daniorerio.lost_found.entities;
 
 public class Location {
+    private Long id;
+
     private String city;
     private String address;
     private String zipCode;
 
-    public Location(String city, String address, String zipCode) {
+    public Location(long id, String city, String address, String zipCode) {
+        this.id = id;
         this.city = city;
         this.address = address;
         this.zipCode = zipCode;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getCity() {
@@ -33,5 +40,9 @@ public class Location {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

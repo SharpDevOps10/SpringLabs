@@ -1,12 +1,15 @@
 package com.daniorerio.lost_found.entities;
 
 public class ContactInformation {
+    private Long id;
+
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private String email;
 
-    public ContactInformation(String firstName, String lastName, String phoneNumber, String email) {
+    public ContactInformation(long id, String firstName, String lastName, String phoneNumber, String email) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
@@ -43,5 +46,13 @@ public class ContactInformation {
 
     public String getEmail() {
         return email;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
     }
 }

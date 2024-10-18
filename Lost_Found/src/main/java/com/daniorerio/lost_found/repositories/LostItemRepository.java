@@ -1,60 +1,207 @@
 package com.daniorerio.lost_found.repositories;
 
+import com.daniorerio.lost_found.DAO.LostItemDao;
+import com.daniorerio.lost_found.entities.ContactInformation;
+import com.daniorerio.lost_found.entities.Location;
 import com.daniorerio.lost_found.entities.LostItem;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.sql.SQLException;
+import java.util.*;
 
 @Repository
-public class LostItemRepository {
-    private final List<LostItem> lostItems = new ArrayList<>();
+public class LostItemRepository implements LostItemDao {
 
-    public void addItem(LostItem lostItem) {
-        lostItems.add(lostItem);
+    private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public LostItemRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void removeItem(LostItem lostItem) {
-        lostItems.remove(lostItem);
+    private final RowMapper<LostItem> lostItemRowMapper = (rs, rowNum) -> {
+        LostItem lostItem = new LostItem(
+                rs.getLong("li_id"),
+                rs.getString("item_name"),
+                rs.getString("item_description"),
+                Arrays.asList((String[]) rs.getArray("item_keywords").getArray())
+        );
+
+        lostItem.setContactInformation(new ContactInformation(
+                rs.getLong("ci_id"),
+                rs.getString("first_name"),
+                rs.getString("last_name"),
+                rs.getString("phone_number"),
+                rs.getString("email")
+        ));
+
+        lostItem.setLocation(new Location(
+                rs.getLong("loc_id"),
+                rs.getString("city"),
+                rs.getString("address"),
+                rs.getString("zip_code")
+        ));
+
+        return lostItem;
+    };
+
+    @Override
+    public LostItem addItem(LostItem lostItem) throws SQLException {
+        String sql = "INSERT INTO lost_items (item_name, item_description, item_keywords, contact_information_id, locations_id) " +
+                "VALUES (?, ?, ?, ?, ?) RETURNING id";
+
+        Long generatedId = jdbcTemplate.queryForObject(sql, Long.class,
+                lostItem.getItemName(),
+                lostItem.getItemDescription(),
+                Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().createArrayOf("text", lostItem.getItemKeywords().toArray()),
+                lostItem.getContactInformation().getId(),
+                lostItem.getLocation().getId()
+        );
+
+        if (generatedId == null) throw new SQLException("Failed to generate ID for the lost item.");
+
+        lostItem.setId(generatedId);
+        return lostItem;
     }
 
+    @Override
     public Optional<LostItem> findById(long id) {
-        return lostItems.stream()
-                .filter(item -> item.getId() == id)
-                .findFirst();
+        String sql = "SELECT " +
+                "li.id AS li_id, " +
+                "li.item_name, " +
+                "li.item_description, " +
+                "li.item_keywords, " +
+                "ci.id AS ci_id, " +
+                "ci.first_name, " +
+                "ci.last_name, " +
+                "ci.phone_number, " +
+                "ci.email, " +
+                "loc.id AS loc_id, " +
+                "loc.city, " +
+                "loc.address, " +
+                "loc.zip_code " +
+                "FROM lost_items li " +
+                "JOIN contact_information ci ON li.contact_information_id = ci.id " +
+                "JOIN locations loc ON li.locations_id = loc.id " +
+                "WHERE li.id = ?";
+        return jdbcTemplate.query(sql, lostItemRowMapper, id).stream().findFirst();
     }
 
-    public Page<LostItem> findAllItemsPagination(Pageable pageable) {
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), lostItems.size());
+    @Override
+    public List<LostItem> findAllItems() {
+        String sql = "SELECT " +
+                "li.id AS li_id, " +
+                "li.item_name, " +
+                "li.item_description, " +
+                "li.item_keywords, " +
+                "ci.id AS ci_id, " +
+                "ci.first_name, " +
+                "ci.last_name, " +
+                "ci.phone_number, " +
+                "ci.email, " +
+                "loc.id AS loc_id, " +
+                "loc.city, " +
+                "loc.address, " +
+                "loc.zip_code " +
+                "FROM lost_items li " +
+                "JOIN contact_information ci ON li.contact_information_id = ci.id " +
+                "JOIN locations loc ON li.locations_id = loc.id " +
+                "ORDER BY li.id";
 
-        List<LostItem> itemsPage = lostItems.subList(start, end);
-        return new PageImpl<>(itemsPage, pageable, lostItems.size());
+        return jdbcTemplate.query(sql, lostItemRowMapper);
     }
 
+    @Override
+    public void updateItem(LostItem lostItem) throws SQLException {
+        StringBuilder sql = new StringBuilder("UPDATE lost_items SET ");
+        List<Object> params = new ArrayList<>();
+
+        if (lostItem.getItemName() != null) {
+            sql.append("item_name = ?, ");
+            params.add(lostItem.getItemName());
+        }
+        if (lostItem.getItemDescription() != null) {
+            sql.append("item_description = ?, ");
+            params.add(lostItem.getItemDescription());
+        }
+        if (lostItem.getItemKeywords() != null) {
+            sql.append("item_keywords = ?, ");
+            params.add(Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().createArrayOf("text", lostItem.getItemKeywords().toArray()));
+        }
+        if (lostItem.getContactInformation() != null && lostItem.getContactInformation().getId() != null) {
+            sql.append("contact_information_id = ?, ");
+            params.add(lostItem.getContactInformation().getId());
+        }
+        if (lostItem.getLocation() != null && lostItem.getLocation().getId() != null) {
+            sql.append("locations_id = ?, ");
+            params.add(lostItem.getLocation().getId());
+        }
+        sql.setLength(sql.length() - 2);
+        sql.append(" WHERE id = ?");
+        params.add(lostItem.getId());
+
+        jdbcTemplate.update(sql.toString(), params.toArray());
+    }
+
+    @Override
+    public void deleteItem(long id) {
+        String sql = "DELETE FROM lost_items WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
     public List<LostItem> findByItemName(String itemName) {
-        return lostItems.stream()
-                .filter(item -> item.getItemName().equals(itemName))
-                .toList();
+        String sql = "SELECT " +
+                "li.id AS li_id, " +
+                "li.item_name, " +
+                "li.item_description, " +
+                "li.item_keywords, " +
+                "ci.id AS ci_id, " +
+                "ci.first_name, " +
+                "ci.last_name, " +
+                "ci.phone_number, " +
+                "ci.email, " +
+                "loc.id AS loc_id, " +
+                "loc.city, " +
+                "loc.address, " +
+                "loc.zip_code " +
+                "FROM lost_items li " +
+                "JOIN contact_information ci ON li.contact_information_id = ci.id " +
+                "JOIN locations loc ON li.locations_id = loc.id " +
+                "WHERE li.item_name = ?";
+
+        return jdbcTemplate.query(sql, lostItemRowMapper, itemName);
     }
 
-    public List<LostItem> findByItemKeywords(String keywords) {
+    @Override
+    public List<LostItem> findByItemKeywords(String keywords) throws SQLException {
         List<String> keywordList = Arrays.stream(keywords.split(","))
                 .map(String::trim)
                 .toList();
 
-        return lostItems.stream()
-                .filter(item -> item.getItemKeywords() != null &&
-                        keywordList.stream()
-                                .allMatch(keyword -> item.getItemKeywords().stream()
-                                        .anyMatch(itemKeyword -> itemKeyword.trim().equalsIgnoreCase(keyword)))
-                )
-                .collect(Collectors.toList());
+        String sql = "SELECT " +
+                "li.id AS li_id, " +
+                "li.item_name, " +
+                "li.item_description, " +
+                "li.item_keywords, " +
+                "ci.id AS ci_id, " +
+                "ci.first_name, " +
+                "ci.last_name, " +
+                "ci.phone_number, " +
+                "ci.email, " +
+                "loc.id AS loc_id, " +
+                "loc.city, " +
+                "loc.address, " +
+                "loc.zip_code " +
+                "FROM lost_items li " +
+                "JOIN contact_information ci ON li.contact_information_id = ci.id " +
+                "JOIN locations loc ON li.locations_id = loc.id " +
+                "WHERE li.item_keywords && ?";
+
+        return jdbcTemplate.query(sql, lostItemRowMapper,
+                Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().createArrayOf("text", keywordList.toArray()));
     }
 }
