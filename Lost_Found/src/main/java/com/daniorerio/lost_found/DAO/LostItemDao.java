@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LostItemDao {
-    LostItem addItem(LostItem lostItem) throws SQLException;
+    void addItem(LostItem lostItem) throws SQLException;
 
     Optional<LostItem> findById(long id);
 
@@ -16,8 +16,6 @@ public interface LostItemDao {
     void updateItem(LostItem lostItem) throws SQLException;
 
     void deleteItem(long id);
-
-    List<LostItem> findByItemName(String itemName);
 
     List<LostItem> findByItemKeywords(String keywords) throws SQLException;
 }

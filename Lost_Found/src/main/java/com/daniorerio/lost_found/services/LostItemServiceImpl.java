@@ -23,8 +23,8 @@ public class LostItemServiceImpl implements LostItemService {
 
     @Override
     @Transactional // Транзакційний метод
-    public LostItem addItem(LostItem lostItem) throws SQLException {
-        return lostItemDao.addItem(lostItem);
+    public void addItem(LostItem lostItem) throws SQLException {
+        lostItemDao.addItem(lostItem);
     }
 
     @Override
@@ -40,11 +40,6 @@ public class LostItemServiceImpl implements LostItemService {
     @Override
     public void deleteItem(long id) {
         lostItemDao.deleteItem(id);
-    }
-
-    @Override
-    public List<LostItem> findByItemName(String itemName) {
-        return lostItemDao.findByItemName(itemName);
     }
 
     @Override

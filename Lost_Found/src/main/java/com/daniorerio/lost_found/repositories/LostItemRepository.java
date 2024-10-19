@@ -49,7 +49,7 @@ public class LostItemRepository implements LostItemDao {
     };
 
     @Override
-    public LostItem addItem(LostItem lostItem) throws SQLException {
+    public void addItem(LostItem lostItem) throws SQLException {
         String sql = "INSERT INTO lost_items (item_name, item_description, item_keywords, contact_information_id, locations_id) " +
                 "VALUES (?, ?, ?, ?, ?) RETURNING id";
 
@@ -64,7 +64,6 @@ public class LostItemRepository implements LostItemDao {
         if (generatedId == null) throw new SQLException("Failed to generate ID for the lost item.");
 
         lostItem.setId(generatedId);
-        return lostItem;
     }
 
     @Override
@@ -153,30 +152,6 @@ public class LostItemRepository implements LostItemDao {
     }
 
     @Override
-    public List<LostItem> findByItemName(String itemName) {
-        String sql = "SELECT " +
-                "li.id AS li_id, " +
-                "li.item_name, " +
-                "li.item_description, " +
-                "li.item_keywords, " +
-                "ci.id AS ci_id, " +
-                "ci.first_name, " +
-                "ci.last_name, " +
-                "ci.phone_number, " +
-                "ci.email, " +
-                "loc.id AS loc_id, " +
-                "loc.city, " +
-                "loc.address, " +
-                "loc.zip_code " +
-                "FROM lost_items li " +
-                "JOIN contact_information ci ON li.contact_information_id = ci.id " +
-                "JOIN locations loc ON li.locations_id = loc.id " +
-                "WHERE li.item_name = ?";
-
-        return jdbcTemplate.query(sql, lostItemRowMapper, itemName);
-    }
-
-    @Override
     public List<LostItem> findByItemKeywords(String keywords) throws SQLException {
         List<String> keywordList = Arrays.stream(keywords.split(","))
                 .map(String::trim)
@@ -205,4 +180,3 @@ public class LostItemRepository implements LostItemDao {
                 Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().createArrayOf("text", keywordList.toArray()));
     }
 }
-//
