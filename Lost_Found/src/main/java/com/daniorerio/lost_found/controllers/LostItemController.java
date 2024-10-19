@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/lost-items")
@@ -39,8 +39,9 @@ public class LostItemController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<LostItem> getItemById(@PathVariable Long id) {
-        Optional<LostItem> lostItem = lostItemService.findById(id);
-        return lostItem.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        LostItem lostItem = lostItemService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
+        return ResponseEntity.ok(lostItem);
     }
 
     @Operation(summary = "Create a new lost item", description = "Creates a new lost item and returns it.")
@@ -61,13 +62,13 @@ public class LostItemController {
     })
     @PatchMapping("/{id}")
     public ResponseEntity<LostItem> updateItem(@PathVariable long id, @RequestBody LostItem lostItem) throws SQLException {
-        Optional<LostItem> existingItem = lostItemService.findById(id);
-        if (existingItem.isPresent()) {
-            lostItem.setId(id);
-            lostItemService.updateItem(lostItem);
-            return ResponseEntity.ok(lostItem);
-        }
-        return ResponseEntity.notFound().build();
+        LostItem existingItem = lostItemService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lost item not found"));
+
+        lostItem.setId(existingItem.getId());
+
+        lostItemService.updateItem(lostItem);
+        return ResponseEntity.ok(lostItem);
     }
 
     @Operation(summary = "Delete a lost item", description = "Deletes a lost item by its ID.")
@@ -77,13 +78,11 @@ public class LostItemController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<LostItem> deleteItem(@PathVariable long id) {
-        Optional<LostItem> existingItem = lostItemService.findById(id);
-        if (existingItem.isPresent()) {
-            LostItem itemToDelete = existingItem.get();
-            lostItemService.deleteItem(id);
-            return ResponseEntity.ok(itemToDelete);
-        }
-        return ResponseEntity.notFound().build();
+        LostItem existingItem = lostItemService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lost item not found"));
+
+        lostItemService.deleteItem(id);
+        return ResponseEntity.ok(existingItem);
     }
 
     @Operation(summary = "Search lost items by keywords", description = "Returns a list of lost items matching the specified keywords.")
@@ -94,7 +93,10 @@ public class LostItemController {
     @GetMapping("/search")
     public ResponseEntity<List<LostItem>> searchItems(@RequestParam("keywords") String keywords) throws SQLException {
         List<LostItem> foundItems = lostItemService.findByItemKeywords(keywords);
-        if (foundItems.isEmpty()) return ResponseEntity.noContent().build();
+
+        if (foundItems.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No lost items found for the given keywords");
+        }
 
         return ResponseEntity.ok(foundItems);
     }

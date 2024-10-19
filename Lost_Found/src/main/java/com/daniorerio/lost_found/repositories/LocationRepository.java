@@ -2,7 +2,6 @@ package com.daniorerio.lost_found.repositories;
 
 import com.daniorerio.lost_found.DAO.LocationDao;
 import com.daniorerio.lost_found.entities.Location;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -55,8 +54,9 @@ public class LocationRepository implements LocationDao {
 
     @Override
     public Location updateLocation(Location location) {
-        Location existingLocation = findById(location.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Location not found"));
+        Location existingLocation = findById(location.getId()).orElse(null);
+
+        if (existingLocation == null) return null;
 
         if (location.getCity() != null) existingLocation.setCity(location.getCity());
         if (location.getAddress() != null) existingLocation.setAddress(location.getAddress());

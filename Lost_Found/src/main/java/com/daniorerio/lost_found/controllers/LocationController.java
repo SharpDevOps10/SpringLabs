@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/locations")
@@ -44,9 +44,10 @@ public class LocationController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Location> getLocationById(@PathVariable long id) {
-        return locationService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        Location location = locationService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
+
+        return ResponseEntity.ok(location);
     }
 
     @Operation(summary = "Update a location", description = "Updates an existing location by its ID.")
@@ -58,7 +59,8 @@ public class LocationController {
     public ResponseEntity<Location> updateLocation(@PathVariable long id, @RequestBody Location location) {
         location.setId(id);
         Location updatedLocation = locationService.updateLocation(location);
-        return ResponseEntity.ok(updatedLocation); // Возвращаем обновленную сущность
+        if (updatedLocation == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
+        return ResponseEntity.ok(updatedLocation);
     }
 
     @Operation(summary = "Delete a location", description = "Deletes a location by its ID.")
@@ -68,13 +70,12 @@ public class LocationController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Location> deleteLocation(@PathVariable long id) {
-        Optional<Location> location = locationService.findById(id);
-        if (location.isPresent()) {
-            locationService.deleteLocation(id);
-            return ResponseEntity.ok(location.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        Location location = locationService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
+
+        locationService.deleteLocation(id);
+
+        return ResponseEntity.ok(location);
     }
 
     @Operation(summary = "Get all locations", description = "Retrieves all locations.")
@@ -93,6 +94,12 @@ public class LocationController {
     })
     @GetMapping("/search")
     public ResponseEntity<List<Location>> getLocationsByCity(@RequestParam String city) {
-        return ResponseEntity.ok(locationService.findByCity(city));
+        List<Location> locations = locationService.findByCity(city);
+
+        if (locations.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No locations found with the given first name");
+        }
+
+        return ResponseEntity.ok(locations);
     }
 }
