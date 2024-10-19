@@ -18,4 +18,8 @@ public interface LostItemDao {
     void deleteItem(long id);
 
     List<LostItem> findByItemKeywords(String keywords) throws SQLException;
+
+    void deleteLostItemsByLocationId(long locationId);
+
+    void deleteLostItemsByContactId(long contactId);
 }

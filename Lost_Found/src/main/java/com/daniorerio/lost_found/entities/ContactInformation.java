@@ -16,6 +16,8 @@ public class ContactInformation {
         this.email = email;
     }
 
+    public ContactInformation() {}
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }

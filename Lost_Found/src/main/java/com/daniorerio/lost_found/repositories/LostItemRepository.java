@@ -5,6 +5,7 @@ import com.daniorerio.lost_found.entities.ContactInformation;
 import com.daniorerio.lost_found.entities.Location;
 import com.daniorerio.lost_found.entities.LostItem;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -64,6 +65,21 @@ public class LostItemRepository implements LostItemDao {
         if (generatedId == null) throw new SQLException("Failed to generate ID for the lost item.");
 
         lostItem.setId(generatedId);
+
+        ContactInformation contactInformation = jdbcTemplate.queryForObject(
+                "SELECT * FROM contact_information WHERE id = ?",
+                new Object[]{lostItem.getContactInformation().getId()},
+                new BeanPropertyRowMapper<>(ContactInformation.class)
+        );
+
+        Location location = jdbcTemplate.queryForObject(
+                "SELECT * FROM locations WHERE id = ?",
+                new Object[]{lostItem.getLocation().getId()},
+                new BeanPropertyRowMapper<>(Location.class)
+        );
+
+        lostItem.setContactInformation(contactInformation);
+        lostItem.setLocation(location);
     }
 
     @Override
@@ -178,5 +194,17 @@ public class LostItemRepository implements LostItemDao {
 
         return jdbcTemplate.query(sql, lostItemRowMapper,
                 Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().createArrayOf("text", keywordList.toArray()));
+    }
+
+    @Override
+    public void deleteLostItemsByLocationId(long locationId) {
+        String sql = "DELETE FROM lost_items WHERE locations_id = ?";
+        jdbcTemplate.update(sql, locationId);
+    }
+
+    @Override
+    public void deleteLostItemsByContactId(long contactId) {
+        String sql = "DELETE FROM lost_items WHERE contact_information_id = ?";
+        jdbcTemplate.update(sql, contactId);
     }
 }

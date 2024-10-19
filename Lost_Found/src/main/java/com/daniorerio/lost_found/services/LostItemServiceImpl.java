@@ -1,5 +1,7 @@
 package com.daniorerio.lost_found.services;
 
+import com.daniorerio.lost_found.DAO.ContactInformationDao;
+import com.daniorerio.lost_found.DAO.LocationDao;
 import com.daniorerio.lost_found.DAO.LostItemDao;
 import com.daniorerio.lost_found.entities.LostItem;
 import com.daniorerio.lost_found.services.interfaces.LostItemService;

@@ -14,6 +14,8 @@ public class Location {
         this.zipCode = zipCode;
     }
 
+    public Location() {}
+
     public Long getId() {
         return id;
     }

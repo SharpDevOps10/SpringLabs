@@ -1,6 +1,7 @@
 package com.daniorerio.lost_found.services;
 
 import com.daniorerio.lost_found.DAO.ContactInformationDao;
+import com.daniorerio.lost_found.DAO.LostItemDao;
 import com.daniorerio.lost_found.entities.ContactInformation;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,12 @@ import java.util.Optional;
 public class ContactInformationServiceImpl implements ContactInformationService {
 
     private final ContactInformationDao contactInformationDao;
+    private final LostItemDao lostItemDao;
 
     @Autowired
-    public ContactInformationServiceImpl(ContactInformationDao contactInformationDao) {
+    public ContactInformationServiceImpl(ContactInformationDao contactInformationDao, LostItemDao lostItemDao) {
         this.contactInformationDao = contactInformationDao;
+        this.lostItemDao = lostItemDao;
     }
 
     @Override
@@ -37,7 +40,9 @@ public class ContactInformationServiceImpl implements ContactInformationService 
     }
 
     @Override
+    @Transactional
     public void deleteContactInformation(Long id) {
+        lostItemDao.deleteLostItemsByContactId(id);
         contactInformationDao.deleteContactInformation(id);
     }
 
