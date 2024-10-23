@@ -1,9 +1,7 @@
 package com.daniorerio.lost_found.services;
 
-import com.daniorerio.lost_found.DAO.ContactInformationDao;
-import com.daniorerio.lost_found.DAO.LostItemDao;
 import com.daniorerio.lost_found.entities.ContactInformation;
-import jakarta.transaction.Transactional;
+import com.daniorerio.lost_found.repositories.ContactInformationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.daniorerio.lost_found.services.interfaces.ContactInformationService;
@@ -14,45 +12,49 @@ import java.util.Optional;
 @Service
 public class ContactInformationServiceImpl implements ContactInformationService {
 
-    private final ContactInformationDao contactInformationDao;
-    private final LostItemDao lostItemDao;
+    private final ContactInformationRepository contactInformationRepository;
 
     @Autowired
-    public ContactInformationServiceImpl(ContactInformationDao contactInformationDao, LostItemDao lostItemDao) {
-        this.contactInformationDao = contactInformationDao;
-        this.lostItemDao = lostItemDao;
+    public ContactInformationServiceImpl(ContactInformationRepository contactInformationRepository) {
+        this.contactInformationRepository = contactInformationRepository;
     }
 
     @Override
-    @Transactional
+    public List<ContactInformation> getAllContactInformation() {
+        return (List<ContactInformation>) contactInformationRepository.findAll();
+    }
+
+    @Override
+    public Optional<ContactInformation> getContactInformationById(Long id) {
+        return contactInformationRepository.findById(id);
+    }
+
+    @Override
     public ContactInformation createContactInformation(ContactInformation contactInformation) {
-        return contactInformationDao.createContactInformation(contactInformation);
+        return contactInformationRepository.save(contactInformation);
     }
 
     @Override
-    public Optional<ContactInformation> findById(Long id) {
-        return contactInformationDao.findById(id);
+    public ContactInformation updateContactInformation(Long id, ContactInformation updatedContactInformation) {
+        if (contactInformationRepository.existsById(id)) {
+            updatedContactInformation.setId(id);
+            return contactInformationRepository.save(updatedContactInformation);
+        }
+        return null;
     }
 
     @Override
-    public ContactInformation updateContactInformation(ContactInformation contactInformation) {
-        return contactInformationDao.updateContactInformation(contactInformation);
-    }
-
-    @Override
-    @Transactional
     public void deleteContactInformation(Long id) {
-        lostItemDao.deleteLostItemsByContactId(id);
-        contactInformationDao.deleteContactInformation(id);
+        contactInformationRepository.deleteById(id);
     }
 
     @Override
-    public List<ContactInformation> findByFirstName(String firstName) {
-        return contactInformationDao.findByFirstName(firstName);
+    public List<ContactInformation> findContactInformationByFirstName(String firstName) {
+        return contactInformationRepository.findByFirstName(firstName);
     }
 
     @Override
-    public List<ContactInformation> findAll() {
-        return contactInformationDao.findAll();
+    public List<ContactInformation> findContactInformationByLastName(String lastName) {
+        return contactInformationRepository.findByLastName(lastName);
     }
 }

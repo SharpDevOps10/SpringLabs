@@ -1,5 +1,6 @@
 package com.daniorerio.lost_found.controllers;
 
+import com.daniorerio.lost_found.DTO.UpdateLocationDto;
 import com.daniorerio.lost_found.entities.Location;
 import com.daniorerio.lost_found.services.interfaces.LocationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/locations")
@@ -44,7 +46,7 @@ public class LocationController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Location> getLocationById(@PathVariable long id) {
-        Location location = locationService.findById(id)
+        Location location = locationService.getLocationById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
 
         return ResponseEntity.ok(location);
@@ -52,25 +54,26 @@ public class LocationController {
 
     @Operation(summary = "Update a location", description = "Updates an existing location by its ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Location updated", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Location updated", content = @Content),
             @ApiResponse(responseCode = "404", description = "Location not found", content = @Content)
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<Location> updateLocation(@PathVariable long id, @RequestBody Location location) {
-        location.setId(id);
-        Location updatedLocation = locationService.updateLocation(location);
-        if (updatedLocation == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
-        return ResponseEntity.ok(updatedLocation);
+    public ResponseEntity<Location> updateLocation(@PathVariable long id, @RequestBody UpdateLocationDto updateLocationDto) {
+        Optional<Location> updatedLocationOpt = locationService.updateLocation(id, updateLocationDto);
+
+        if (updatedLocationOpt.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
+
+        return ResponseEntity.ok(updatedLocationOpt.get());
     }
 
     @Operation(summary = "Delete a location", description = "Deletes a location by its ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Location deleted", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Location deleted", content = @Content),
             @ApiResponse(responseCode = "404", description = "Location not found", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Location> deleteLocation(@PathVariable long id) {
-        Location location = locationService.findById(id)
+        Location location = locationService.getLocationById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
 
         locationService.deleteLocation(id);
@@ -80,11 +83,11 @@ public class LocationController {
 
     @Operation(summary = "Get all locations", description = "Retrieves all locations.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of locations", content = @Content(schema = @Schema(implementation = Location.class)))
+            @ApiResponse(responseCode = "200", description = "List of locations retrieved successfully", content = @Content(schema = @Schema(implementation = Location.class)))
     })
     @GetMapping
     public ResponseEntity<List<Location>> getAllLocations() {
-        return ResponseEntity.ok(locationService.findAllLocations());
+        return ResponseEntity.ok(locationService.getAllLocations());
     }
 
     @Operation(summary = "Search locations by city", description = "Finds locations by the provided city name.")
@@ -94,10 +97,10 @@ public class LocationController {
     })
     @GetMapping("/search")
     public ResponseEntity<List<Location>> getLocationsByCity(@RequestParam String city) {
-        List<Location> locations = locationService.findByCity(city);
+        List<Location> locations = locationService.findLocationsByCity(city);
 
         if (locations.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No locations found with the given first name");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No locations found for the given city");
         }
 
         return ResponseEntity.ok(locations);

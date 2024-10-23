@@ -6,15 +6,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ContactInformationService {
+    List<ContactInformation> getAllContactInformation();
+
+    Optional<ContactInformation> getContactInformationById(Long id);
+
     ContactInformation createContactInformation(ContactInformation contactInformation);
 
-    Optional<ContactInformation> findById(Long id);
-
-    ContactInformation updateContactInformation(ContactInformation contactInformation);
+    ContactInformation updateContactInformation(Long id, ContactInformation updatedContactInformation);
 
     void deleteContactInformation(Long id);
 
-    List<ContactInformation> findByFirstName(String firstName);
+    List<ContactInformation> findContactInformationByFirstName(String firstName);
 
-    List<ContactInformation> findAll();
+    List<ContactInformation> findContactInformationByLastName(String lastName);
 }

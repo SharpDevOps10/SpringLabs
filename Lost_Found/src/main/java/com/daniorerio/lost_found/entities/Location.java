@@ -1,10 +1,22 @@
 package com.daniorerio.lost_found.entities;
 
-public class Location {
-    private Long id;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "locations")
+@NamedQuery(name = "Location.findByZipCode", query = "SELECT l FROM Location l WHERE l.zipCode = :zipCode")
+public class Location {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(name = "city", nullable = false)
     private String city;
+
+    @Column(name = "address")
     private String address;
+
+    @Column(name = "zip_code")
     private String zipCode;
 
     public Location(long id, String city, String address, String zipCode) {
@@ -14,7 +26,8 @@ public class Location {
         this.zipCode = zipCode;
     }
 
-    public Location() {}
+    public Location() {
+    }
 
     public Long getId() {
         return id;

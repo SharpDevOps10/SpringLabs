@@ -1,14 +1,38 @@
 package com.daniorerio.lost_found.entities;
 
+import jakarta.persistence.*;
+
 import java.util.List;
 
+@Entity
+@Table(name = "lost_items")
+@NamedQueries({
+        @NamedQuery(
+                name = "LostItem.findByItemDescription",
+                query = "SELECT li FROM LostItem li WHERE li.itemDescription = :description"
+        )
+})
 public class LostItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "item_name", nullable = false)
     private String itemName;
+
+    @Column(name = "item_description")
     private String itemDescription;
+
+    @ElementCollection
+    @Column(name = "item_keywords")
     private List<String> itemKeywords;
+
+    @ManyToOne
+    @JoinColumn(name = "contact_information_id")
     private ContactInformation contactInformation;
+
+    @ManyToOne
+    @JoinColumn(name = "locations_id")
     private Location location;
 
     public LostItem(long id, String itemName, String itemDescription, List<String> itemKeywords) {
@@ -16,6 +40,9 @@ public class LostItem {
         this.itemName = itemName;
         this.itemDescription = itemDescription;
         this.itemKeywords = itemKeywords;
+    }
+
+    public LostItem() {
     }
 
     public long getId() {
@@ -26,24 +53,12 @@ public class LostItem {
         return itemName;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
-    }
-
     public String getItemDescription() {
         return itemDescription;
     }
 
-    public void setItemDescription(String itemDescription) {
-        this.itemDescription = itemDescription;
-    }
-
     public List<String> getItemKeywords() {
         return itemKeywords;
-    }
-
-    public void setItemKeywords(List<String> itemKeywords) {
-        this.itemKeywords = itemKeywords;
     }
 
     public ContactInformation getContactInformation() {

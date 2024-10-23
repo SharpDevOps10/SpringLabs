@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -25,10 +24,10 @@ public class LostItemController {
         this.lostItemService = lostItemService;
     }
 
-    @Operation(summary = "Retrieve a list of lost items", description = "Returns a list of lost items with pagination support.")
+    @Operation(summary = "Retrieve a list of lost items", description = "Returns a list of lost items.")
     @GetMapping
     public ResponseEntity<List<LostItem>> listItems() {
-        List<LostItem> items = lostItemService.findAllItems();
+        List<LostItem> items = lostItemService.getAllLostItems();
         return ResponseEntity.ok(items);
     }
 
@@ -39,7 +38,7 @@ public class LostItemController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<LostItem> getItemById(@PathVariable Long id) {
-        LostItem lostItem = lostItemService.findById(id)
+        LostItem lostItem = lostItemService.getLostItemById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
         return ResponseEntity.ok(lostItem);
     }
@@ -50,9 +49,9 @@ public class LostItemController {
             @ApiResponse(responseCode = "400", description = "Invalid data")
     })
     @PostMapping
-    public ResponseEntity<LostItem> createItem(@RequestBody LostItem lostItem) throws SQLException {
-        lostItemService.addItem(lostItem);
-        return ResponseEntity.status(HttpStatus.CREATED).body(lostItem);
+    public ResponseEntity<LostItem> createItem(@RequestBody LostItem lostItem) {
+        LostItem createdItem = lostItemService.createLostItem(lostItem);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdItem);
     }
 
     @Operation(summary = "Update a lost item", description = "Updates information about a lost item.")
@@ -60,15 +59,13 @@ public class LostItemController {
             @ApiResponse(responseCode = "200", description = "Item successfully updated"),
             @ApiResponse(responseCode = "404", description = "Item not found")
     })
-    @PatchMapping("/{id}")
-    public ResponseEntity<LostItem> updateItem(@PathVariable long id, @RequestBody LostItem lostItem) throws SQLException {
-        LostItem existingItem = lostItemService.findById(id)
+    @PutMapping("/{id}")
+    public ResponseEntity<LostItem> updateItem(@PathVariable long id, @RequestBody LostItem updatedLostItem) {
+        lostItemService.getLostItemById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lost item not found"));
 
-        lostItem.setId(existingItem.getId());
-
-        lostItemService.updateItem(lostItem);
-        return ResponseEntity.ok(lostItem);
+        LostItem updatedItem = lostItemService.updateLostItem(id, updatedLostItem);
+        return ResponseEntity.ok(updatedItem);
     }
 
     @Operation(summary = "Delete a lost item", description = "Deletes a lost item by its ID.")
@@ -77,12 +74,12 @@ public class LostItemController {
             @ApiResponse(responseCode = "404", description = "Item not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<LostItem> deleteItem(@PathVariable long id) {
-        LostItem existingItem = lostItemService.findById(id)
+    public ResponseEntity<Void> deleteItem(@PathVariable long id) {
+        lostItemService.getLostItemById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lost item not found"));
 
-        lostItemService.deleteItem(id);
-        return ResponseEntity.ok(existingItem);
+        lostItemService.deleteLostItem(id);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Search lost items by keywords", description = "Returns a list of lost items matching the specified keywords.")
@@ -91,8 +88,8 @@ public class LostItemController {
             @ApiResponse(responseCode = "204", description = "No items found")
     })
     @GetMapping("/search")
-    public ResponseEntity<List<LostItem>> searchItems(@RequestParam("keywords") String keywords) throws SQLException {
-        List<LostItem> foundItems = lostItemService.findByItemKeywords(keywords);
+    public ResponseEntity<List<LostItem>> searchItems(@RequestParam("keywords") String keywords) {
+        List<LostItem> foundItems = lostItemService.findLostItemsByItemKeywords(keywords);
 
         if (foundItems.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No lost items found for the given keywords");

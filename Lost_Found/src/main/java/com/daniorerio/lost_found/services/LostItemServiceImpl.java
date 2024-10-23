@@ -1,56 +1,75 @@
 package com.daniorerio.lost_found.services;
 
-import com.daniorerio.lost_found.DAO.ContactInformationDao;
-import com.daniorerio.lost_found.DAO.LocationDao;
-import com.daniorerio.lost_found.DAO.LostItemDao;
 import com.daniorerio.lost_found.entities.LostItem;
+import com.daniorerio.lost_found.repositories.LostItemRepository;
 import com.daniorerio.lost_found.services.interfaces.LostItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class LostItemServiceImpl implements LostItemService {
 
-    private final LostItemDao lostItemDao;
+    private final LostItemRepository lostItemRepository;
 
     @Autowired
-    public LostItemServiceImpl(LostItemDao lostItemDao) {
-        this.lostItemDao = lostItemDao;
+    public LostItemServiceImpl(LostItemRepository lostItemRepository) {
+        this.lostItemRepository = lostItemRepository;
     }
 
     @Override
-    @Transactional // Транзакційний метод
-    public void addItem(LostItem lostItem) throws SQLException {
-        lostItemDao.addItem(lostItem);
+    public List<LostItem> getAllLostItems() {
+        return (List<LostItem>) lostItemRepository.findAll();
     }
 
     @Override
-    public Optional<LostItem> findById(long id) {
-        return lostItemDao.findById(id);
+    public Optional<LostItem> getLostItemById(Long id) {
+        return lostItemRepository.findById(id);
     }
 
     @Override
-    public void updateItem(LostItem lostItem) throws SQLException {
-        lostItemDao.updateItem(lostItem);
+    public LostItem createLostItem(LostItem lostItem) {
+        return lostItemRepository.save(lostItem);
     }
 
     @Override
-    public void deleteItem(long id) {
-        lostItemDao.deleteItem(id);
+    public LostItem updateLostItem(Long id, LostItem updatedLostItem) {
+        if (lostItemRepository.existsById(id)) {
+            updatedLostItem.setId(id);
+            return lostItemRepository.save(updatedLostItem);
+        }
+        return null;
     }
 
     @Override
-    public List<LostItem> findByItemKeywords(String keywords) throws SQLException {
-        return lostItemDao.findByItemKeywords(keywords);
+    public void deleteLostItem(Long id) {
+        lostItemRepository.deleteById(id);
     }
 
     @Override
-    public List<LostItem> findAllItems() {
-        return lostItemDao.findAllItems();
+    public List<LostItem> findLostItemsByItemName(String itemName) {
+        return lostItemRepository.findByItemName(itemName);
+    }
+
+    @Override
+    public List<LostItem> findLostItemsByItemDescription(String description) {
+        return lostItemRepository.findByItemDescription(description);
+    }
+
+    @Override
+    public List<LostItem> findLostItemsByContactInformationFirstName(String firstName) {
+        return lostItemRepository.findByContactInformation_FirstName(firstName);
+    }
+
+    @Override
+    public List<LostItem> findLostItemsByLocationCity(String city) {
+        return lostItemRepository.findByLocation_City(city);
+    }
+
+    @Override
+    public List<LostItem> findLostItemsByItemKeywords(String keyword) {
+        return lostItemRepository.findByItemKeywordsContaining(keyword);
     }
 }

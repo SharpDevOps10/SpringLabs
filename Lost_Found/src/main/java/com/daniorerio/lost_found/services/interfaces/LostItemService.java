@@ -2,20 +2,27 @@ package com.daniorerio.lost_found.services.interfaces;
 
 import com.daniorerio.lost_found.entities.LostItem;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 public interface LostItemService {
-    void addItem(LostItem lostItem) throws SQLException;
+    List<LostItem> getAllLostItems();
 
-    Optional<LostItem> findById(long id);
+    Optional<LostItem> getLostItemById(Long id);
 
-    void updateItem(LostItem lostItem) throws SQLException;
+    LostItem createLostItem(LostItem lostItem);
 
-    void deleteItem(long id);
+    LostItem updateLostItem(Long id, LostItem updatedLostItem);
 
-    List<LostItem> findByItemKeywords(String keywords) throws SQLException;
+    void deleteLostItem(Long id);
 
-    List<LostItem> findAllItems();
+    List<LostItem> findLostItemsByItemName(String itemName);
+
+    List<LostItem> findLostItemsByItemDescription(String description);
+
+    List<LostItem> findLostItemsByContactInformationFirstName(String firstName);
+
+    List<LostItem> findLostItemsByLocationCity(String city);
+
+    List<LostItem> findLostItemsByItemKeywords(String keyword);
 }

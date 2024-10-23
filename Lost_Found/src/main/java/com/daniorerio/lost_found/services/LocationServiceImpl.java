@@ -1,10 +1,10 @@
 package com.daniorerio.lost_found.services;
 
-import com.daniorerio.lost_found.DAO.LocationDao;
-import com.daniorerio.lost_found.DAO.LostItemDao;
+import com.daniorerio.lost_found.DTO.UpdateLocationDto;
 import com.daniorerio.lost_found.entities.Location;
+import com.daniorerio.lost_found.mapper.LocationMapper;
+import com.daniorerio.lost_found.repositories.LocationRepository;
 import com.daniorerio.lost_found.services.interfaces.LocationService;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,47 +13,54 @@ import java.util.Optional;
 
 @Service
 public class LocationServiceImpl implements LocationService {
-
-    private final LocationDao locationDao;
-    private final LostItemDao lostItemDao;
-
+    private final LocationRepository locationRepository;
+    private final LocationMapper locationMapper;
 
     @Autowired
-    public LocationServiceImpl(LocationDao locationDao, LostItemDao lostItemDao) {
-        this.locationDao = locationDao;
-        this.lostItemDao = lostItemDao;
+    public LocationServiceImpl(LocationRepository locationRepository, LocationMapper locationMapper) {
+        this.locationRepository = locationRepository;
+        this.locationMapper = locationMapper;
     }
 
     @Override
-    @Transactional
+    public List<Location> getAllLocations() {
+        return (List<Location>) locationRepository.findAll();
+    }
+
+    @Override
+    public Optional<Location> getLocationById(Long id) {
+        return locationRepository.findById(id);
+    }
+
+    @Override
     public Location createLocation(Location location) {
-        return locationDao.addLocation(location);
+        return locationRepository.save(location);
     }
 
     @Override
-    public Optional<Location> findById(long id) {
-        return locationDao.findById(id);
+    public Optional<Location> updateLocation(Long id, UpdateLocationDto updateLocationDto) {
+        Optional<Location> existingLocationOpt = locationRepository.findById(id);
+
+        existingLocationOpt.ifPresent(existingLocation -> {
+            locationMapper.updateLocationFromDto(updateLocationDto, existingLocation);
+            locationRepository.save(existingLocation);
+        });
+
+        return existingLocationOpt;
     }
 
     @Override
-    public Location updateLocation(Location location) {
-        return locationDao.updateLocation(location);
+    public void deleteLocation(Long id) {
+        locationRepository.deleteById(id);
     }
 
     @Override
-    @Transactional
-    public void deleteLocation(long id) {
-        lostItemDao.deleteLostItemsByLocationId(id);
-        locationDao.deleteLocation(id);
+    public List<Location> findLocationsByCity(String city) {
+        return locationRepository.findByCity(city);
     }
 
     @Override
-    public List<Location> findAllLocations() {
-        return locationDao.findAll();
-    }
-
-    @Override
-    public List<Location> findByCity(String city) {
-        return locationDao.findByCity(city);
+    public List<Location> findLocationsByZipCode(String zipCode) {
+        return locationRepository.findByZipCode(zipCode);
     }
 }

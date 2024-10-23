@@ -44,7 +44,7 @@ public class ContactInformationController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ContactInformation> getContactById(@PathVariable Long id) {
-        ContactInformation contact = contactInformationService.findById(id)
+        ContactInformation contact = contactInformationService.getContactInformationById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
         return ResponseEntity.ok(contact);
     }
@@ -57,12 +57,13 @@ public class ContactInformationController {
     })
     @PatchMapping("/{id}")
     public ResponseEntity<ContactInformation> updateContact(@PathVariable Long id, @RequestBody ContactInformation contactInformation) {
-        contactInformation.setId(id);
-        ContactInformation updatedInfo = contactInformationService.updateContactInformation(contactInformation);
+        ContactInformation updatedContact = contactInformationService.updateContactInformation(id, contactInformation);
 
-        if (updatedInfo == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        if (updatedContact == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+        }
 
-        return ResponseEntity.ok(updatedInfo);
+        return ResponseEntity.ok(updatedContact);
     }
 
     @Operation(summary = "Delete a contact",
@@ -73,7 +74,7 @@ public class ContactInformationController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ContactInformation> deleteContact(@PathVariable Long id) {
-        ContactInformation contact = contactInformationService.findById(id)
+        ContactInformation contact = contactInformationService.getContactInformationById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
 
         contactInformationService.deleteContactInformation(id);
@@ -88,7 +89,7 @@ public class ContactInformationController {
     })
     @GetMapping
     public ResponseEntity<List<ContactInformation>> getAllContacts() {
-        return ResponseEntity.ok(contactInformationService.findAll());
+        return ResponseEntity.ok(contactInformationService.getAllContactInformation());
     }
 
     @Operation(summary = "Get contacts by first name",
@@ -99,7 +100,7 @@ public class ContactInformationController {
     })
     @GetMapping("/search")
     public ResponseEntity<List<ContactInformation>> getContactsByFirstName(@RequestParam String firstName) {
-        List<ContactInformation> contacts = contactInformationService.findByFirstName(firstName);
+        List<ContactInformation> contacts = contactInformationService.findContactInformationByFirstName(firstName);
 
         if (contacts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No contacts found with the given first name");
