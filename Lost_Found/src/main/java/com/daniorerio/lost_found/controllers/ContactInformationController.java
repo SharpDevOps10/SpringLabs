@@ -1,5 +1,6 @@
 package com.daniorerio.lost_found.controllers;
 
+import com.daniorerio.lost_found.DTO.UpdateContactInformationDto;
 import com.daniorerio.lost_found.entities.ContactInformation;
 import com.daniorerio.lost_found.services.interfaces.ContactInformationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/contacts")
@@ -56,14 +58,12 @@ public class ContactInformationController {
             @ApiResponse(responseCode = "404", description = "Contact not found"),
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<ContactInformation> updateContact(@PathVariable Long id, @RequestBody ContactInformation contactInformation) {
-        ContactInformation updatedContact = contactInformationService.updateContactInformation(id, contactInformation);
+    public ResponseEntity<ContactInformation> updateContact(@PathVariable Long id, @RequestBody UpdateContactInformationDto contactInformation) {
+        Optional<ContactInformation> updatedContact = contactInformationService.updateContactInformation(id, contactInformation);
 
-        if (updatedContact == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
-        }
+        if (updatedContact.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
 
-        return ResponseEntity.ok(updatedContact);
+        return ResponseEntity.ok(updatedContact.get());
     }
 
     @Operation(summary = "Delete a contact",
@@ -107,5 +107,27 @@ public class ContactInformationController {
         }
 
         return ResponseEntity.ok(contacts);
+    }
+
+    @GetMapping("/email/{emailPart}")
+    public ResponseEntity<List<ContactInformation>> getContactInformationByEmailPart(@PathVariable String emailPart) {
+        List<ContactInformation> contactInformation = contactInformationService.findContactInformationByEmailPart(emailPart);
+
+        if (contactInformation.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No contacts found with the given email");
+        }
+
+        return ResponseEntity.ok(contactInformation);
+    }
+
+    @GetMapping("/last-name/{lastName}")
+    public ResponseEntity<List<ContactInformation>> getContactInformationByLastName(@PathVariable String lastName) {
+        List<ContactInformation> contactInformation = contactInformationService.findContactInformationByLastName(lastName);
+
+        if (contactInformation.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No contacts found with the given last name");
+        }
+
+        return ResponseEntity.ok(contactInformation);
     }
 }

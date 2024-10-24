@@ -1,5 +1,6 @@
 package com.daniorerio.lost_found.services;
 
+import com.daniorerio.lost_found.DTO.UpdateContactInformationDto;
 import com.daniorerio.lost_found.entities.ContactInformation;
 import com.daniorerio.lost_found.repositories.ContactInformationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +36,22 @@ public class ContactInformationServiceImpl implements ContactInformationService 
     }
 
     @Override
-    public ContactInformation updateContactInformation(Long id, ContactInformation updatedContactInformation) {
-        if (contactInformationRepository.existsById(id)) {
-            updatedContactInformation.setId(id);
-            return contactInformationRepository.save(updatedContactInformation);
+    public Optional<ContactInformation> updateContactInformation(Long id, UpdateContactInformationDto updateContactInformationDto) {
+        Optional<ContactInformation> existingContactOpt = contactInformationRepository.findById(id);
+
+        if (existingContactOpt.isPresent()) {
+            ContactInformation existingContact = existingContactOpt.get();
+
+            updateContactInformationDto.firstName().ifPresent(existingContact::setFirstName);
+            updateContactInformationDto.lastName().ifPresent(existingContact::setLastName);
+            updateContactInformationDto.email().ifPresent(existingContact::setEmail);
+            updateContactInformationDto.phoneNumber().ifPresent(existingContact::setPhoneNumber);
+
+            contactInformationRepository.save(existingContact);
+            return Optional.of(existingContact);
         }
-        return null;
+
+        return Optional.empty();
     }
 
     @Override
@@ -56,5 +67,10 @@ public class ContactInformationServiceImpl implements ContactInformationService 
     @Override
     public List<ContactInformation> findContactInformationByLastName(String lastName) {
         return contactInformationRepository.findByLastName(lastName);
+    }
+
+    @Override
+    public List<ContactInformation> findContactInformationByEmailPart(String emailPart) {
+        return contactInformationRepository.findByEmailContaining(emailPart);
     }
 }
