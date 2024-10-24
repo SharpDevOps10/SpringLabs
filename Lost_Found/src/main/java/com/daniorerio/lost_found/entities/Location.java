@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "locations")
-@NamedQuery(name = "Location.findByZipCode", query = "SELECT l FROM Location l WHERE l.zipCode = :zipCode")
+@NamedQuery(name = "Location.findByAddress", query = "SELECT l FROM Location l WHERE l.address = :address")
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

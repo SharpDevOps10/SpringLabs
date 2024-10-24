@@ -20,4 +20,6 @@ public interface LocationService {
     List<Location> findLocationsByCity(String city);
 
     List<Location> findLocationsByZipCode(String zipCode);
+
+    List<Location> findLocationsByAddress(String address);
 }

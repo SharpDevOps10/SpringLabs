@@ -60,6 +60,11 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    public List<Location> findLocationsByAddress(String address) {
+        return locationRepository.findByAddress(address);
+    }
+
+    @Override
     public List<Location> findLocationsByZipCode(String zipCode) {
         return locationRepository.findByZipCode(zipCode);
     }

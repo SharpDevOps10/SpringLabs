@@ -105,4 +105,33 @@ public class LocationController {
 
         return ResponseEntity.ok(locations);
     }
+
+
+    @Operation(summary = "Get locations by zip code")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found locations"),
+            @ApiResponse(responseCode = "404", description = "Locations not found")
+    })
+    @GetMapping("/zip-code/{zipCode}")
+    public ResponseEntity<List<Location>> getLocationsByZipCode(@PathVariable String zipCode) {
+        List<Location> locations = locationService.findLocationsByZipCode(zipCode);
+        if (locations.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Locations not found for zip code: " + zipCode);
+        }
+        return ResponseEntity.ok(locations);
+    }
+
+    @Operation(summary = "Get locations by address")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found locations"),
+            @ApiResponse(responseCode = "404", description = "Locations not found")
+    })
+    @GetMapping("/address/{address}")
+    public ResponseEntity<List<Location>> getLocationsByAddress(@PathVariable String address) {
+        List<Location> locations = locationService.findLocationsByAddress(address);
+        if (locations.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Locations not found for address: " + address);
+        }
+        return ResponseEntity.ok(locations);
+    }
 }

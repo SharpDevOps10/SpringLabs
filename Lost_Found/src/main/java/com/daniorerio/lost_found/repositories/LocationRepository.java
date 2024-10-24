@@ -9,15 +9,13 @@ import java.util.List;
 
 @Repository
 public interface LocationRepository extends CrudRepository<Location, Long> {
-    // 5.1.1 Пошук за допомогою @Query (JPQL)
+    // @Query
     @Query("SELECT l FROM Location l WHERE l.city = :city")
     List<Location> findByCity(String city);
 
-    // 5.1.2 Пошук за допомогою @NamedQuery (визначений у @Entity)
+    // NamedQuery
     List<Location> findByAddress(String address);
 
-    // 5.2 Автоматично згенеровані методи на основі імені
-    List<Location> findByCityContaining(String cityFragment);
-
+    // Auto
     List<Location> findByZipCode(String zipCode);
 }
