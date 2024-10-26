@@ -1,5 +1,6 @@
 package com.daniorerio.lost_found.controllers;
 
+import com.daniorerio.lost_found.DTO.LostItemUpdateDTO;
 import com.daniorerio.lost_found.entities.LostItem;
 import com.daniorerio.lost_found.services.interfaces.LostItemService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/lost-items")
@@ -59,12 +61,13 @@ public class LostItemController {
             @ApiResponse(responseCode = "200", description = "Item successfully updated"),
             @ApiResponse(responseCode = "404", description = "Item not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<LostItem> updateItem(@PathVariable long id, @RequestBody LostItem updatedLostItem) {
-        lostItemService.getLostItemById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lost item not found"));
+    @PatchMapping("/{id}")
+    public ResponseEntity<LostItem> partialUpdateItem(@PathVariable long id, @RequestBody LostItemUpdateDTO updateDTO) {
+        Optional<LostItem> existingItemOpt = lostItemService.getLostItemById(id);
 
-        LostItem updatedItem = lostItemService.updateLostItem(id, updatedLostItem);
+        if (existingItemOpt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        LostItem updatedItem = lostItemService.updateLostItem(id, updateDTO);
         return ResponseEntity.ok(updatedItem);
     }
 
@@ -96,5 +99,33 @@ public class LostItemController {
         }
 
         return ResponseEntity.ok(foundItems);
+    }
+
+    @Operation(summary = "Search lost items by name", description = "Returns a list of lost items matching the specified name.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Items found successfully"),
+            @ApiResponse(responseCode = "404", description = "No items found for the given name")
+    })
+    @GetMapping("/search/by-name")
+    public ResponseEntity<List<LostItem>> findLostItemsByItemName(@RequestParam String itemName) {
+        List<LostItem> lostItems = lostItemService.findLostItemsByItemName(itemName);
+        if (lostItems.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No lost items found for the given name");
+        }
+        return ResponseEntity.ok(lostItems);
+    }
+
+    @Operation(summary = "Search lost items by description", description = "Returns a list of lost items matching the specified description.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Items found successfully"),
+            @ApiResponse(responseCode = "404", description = "No items found for the given description")
+    })
+    @GetMapping("/search/by-description")
+    public ResponseEntity<List<LostItem>> findLostItemsByItemDescription(@RequestParam String description) {
+        List<LostItem> lostItems = lostItemService.findLostItemsByItemDescription(description);
+        if (lostItems.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No lost items found for the given description");
+        }
+        return ResponseEntity.ok(lostItems);
     }
 }

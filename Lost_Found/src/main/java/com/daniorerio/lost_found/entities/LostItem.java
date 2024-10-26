@@ -24,7 +24,8 @@ public class LostItem {
     private String itemDescription;
 
     @ElementCollection
-    @Column(name = "item_keywords")
+    @CollectionTable(name = "lost_item_keywords", joinColumns = @JoinColumn(name = "lost_item_id"))
+    @Column(name = "item_keyword")
     private List<String> itemKeywords;
 
     @ManyToOne
@@ -61,6 +62,7 @@ public class LostItem {
         return itemKeywords;
     }
 
+
     public ContactInformation getContactInformation() {
         return contactInformation;
     }
@@ -79,5 +81,17 @@ public class LostItem {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public void setItemDescription(String itemDescription) {
+        this.itemDescription = itemDescription;
+    }
+
+    public void setItemKeywords(List<String> itemKeywords) {
+        this.itemKeywords = itemKeywords;
     }
 }

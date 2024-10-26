@@ -1,6 +1,10 @@
 package com.daniorerio.lost_found.services;
 
+import com.daniorerio.lost_found.DTO.LostItemUpdateDTO;
+
 import com.daniorerio.lost_found.entities.LostItem;
+import com.daniorerio.lost_found.repositories.ContactInformationRepository;
+import com.daniorerio.lost_found.repositories.LocationRepository;
 import com.daniorerio.lost_found.repositories.LostItemRepository;
 import com.daniorerio.lost_found.services.interfaces.LostItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +17,14 @@ import java.util.Optional;
 public class LostItemServiceImpl implements LostItemService {
 
     private final LostItemRepository lostItemRepository;
+    private final ContactInformationRepository contactInformationRepository;
+    private final LocationRepository locationRepository;
 
     @Autowired
-    public LostItemServiceImpl(LostItemRepository lostItemRepository) {
+    public LostItemServiceImpl(LostItemRepository lostItemRepository, ContactInformationRepository contactInformationRepository, LocationRepository locationRepository) {
         this.lostItemRepository = lostItemRepository;
+        this.contactInformationRepository = contactInformationRepository;
+        this.locationRepository = locationRepository;
     }
 
     @Override
@@ -35,12 +43,30 @@ public class LostItemServiceImpl implements LostItemService {
     }
 
     @Override
-    public LostItem updateLostItem(Long id, LostItem updatedLostItem) {
-        if (lostItemRepository.existsById(id)) {
-            updatedLostItem.setId(id);
-            return lostItemRepository.save(updatedLostItem);
+    public LostItem updateLostItem(Long id, LostItemUpdateDTO updateDTO) {
+        LostItem existingItem = lostItemRepository.findById(id).orElse(null);
+
+        if (existingItem == null) return null;
+
+        if (updateDTO.getItemName() != null) {
+            existingItem.setItemName(updateDTO.getItemName());
         }
-        return null;
+        if (updateDTO.getItemDescription() != null) {
+            existingItem.setItemDescription(updateDTO.getItemDescription());
+        }
+        if (updateDTO.getItemKeywords() != null) {
+            existingItem.setItemKeywords(updateDTO.getItemKeywords());
+        }
+        if (updateDTO.getContactInformationId() != null) {
+            contactInformationRepository.findById(updateDTO.getContactInformationId())
+                    .ifPresent(existingItem::setContactInformation);
+        }
+        if (updateDTO.getLocationId() != null) {
+            locationRepository.findById(updateDTO.getLocationId())
+                    .ifPresent(existingItem::setLocation);
+        }
+
+        return lostItemRepository.save(existingItem);
     }
 
     @Override
@@ -56,16 +82,6 @@ public class LostItemServiceImpl implements LostItemService {
     @Override
     public List<LostItem> findLostItemsByItemDescription(String description) {
         return lostItemRepository.findByItemDescription(description);
-    }
-
-    @Override
-    public List<LostItem> findLostItemsByContactInformationFirstName(String firstName) {
-        return lostItemRepository.findByContactInformation_FirstName(firstName);
-    }
-
-    @Override
-    public List<LostItem> findLostItemsByLocationCity(String city) {
-        return lostItemRepository.findByLocation_City(city);
     }
 
     @Override

@@ -4,7 +4,9 @@ import com.daniorerio.lost_found.DTO.UpdateLocationDto;
 import com.daniorerio.lost_found.entities.Location;
 import com.daniorerio.lost_found.mapper.LocationMapper;
 import com.daniorerio.lost_found.repositories.LocationRepository;
+import com.daniorerio.lost_found.repositories.LostItemRepository;
 import com.daniorerio.lost_found.services.interfaces.LocationService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +17,14 @@ import java.util.Optional;
 public class LocationServiceImpl implements LocationService {
     private final LocationRepository locationRepository;
     private final LocationMapper locationMapper;
+    private final LostItemRepository lostItemRepository;
+
 
     @Autowired
-    public LocationServiceImpl(LocationRepository locationRepository, LocationMapper locationMapper) {
+    public LocationServiceImpl(LocationRepository locationRepository, LocationMapper locationMapper, LostItemRepository lostItemRepository) {
         this.locationRepository = locationRepository;
         this.locationMapper = locationMapper;
+        this.lostItemRepository = lostItemRepository;
     }
 
     @Override
@@ -49,8 +54,10 @@ public class LocationServiceImpl implements LocationService {
         return existingLocationOpt;
     }
 
+    @Transactional
     @Override
     public void deleteLocation(Long id) {
+        lostItemRepository.deleteByLocationId(id);
         locationRepository.deleteById(id);
     }
 

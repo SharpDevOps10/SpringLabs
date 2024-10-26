@@ -1,5 +1,6 @@
 package com.daniorerio.lost_found.services.interfaces;
 
+import com.daniorerio.lost_found.DTO.LostItemUpdateDTO;
 import com.daniorerio.lost_found.entities.LostItem;
 
 import java.util.List;
@@ -12,17 +13,13 @@ public interface LostItemService {
 
     LostItem createLostItem(LostItem lostItem);
 
-    LostItem updateLostItem(Long id, LostItem updatedLostItem);
+    LostItem updateLostItem(Long id, LostItemUpdateDTO updateDTO);
 
     void deleteLostItem(Long id);
 
     List<LostItem> findLostItemsByItemName(String itemName);
 
     List<LostItem> findLostItemsByItemDescription(String description);
-
-    List<LostItem> findLostItemsByContactInformationFirstName(String firstName);
-
-    List<LostItem> findLostItemsByLocationCity(String city);
 
     List<LostItem> findLostItemsByItemKeywords(String keyword);
 }

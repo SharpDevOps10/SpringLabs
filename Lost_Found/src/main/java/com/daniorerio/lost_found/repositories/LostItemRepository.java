@@ -10,17 +10,15 @@ import java.util.List;
 @Repository
 public interface LostItemRepository extends CrudRepository<LostItem, Long> {
 
+    //Query
     @Query("SELECT li FROM LostItem li WHERE li.itemName = :itemName")
     List<LostItem> findByItemName(String itemName);
 
-    // 5.1.2 Пошук за допомогою @NamedQuery (визначений у @Entity)
+    // @NamedQuery
     List<LostItem> findByItemDescription(String description);
 
-    // 5.2 Автоматично згенеровані методи на основі імені
-    List<LostItem> findByContactInformation_FirstName(String firstName);
-
-    List<LostItem> findByLocation_City(String city);
-
-    // Пошук за ключовими словами
+    // Auto
     List<LostItem> findByItemKeywordsContaining(String keyword);
+
+    void deleteByLocationId(Long locationId);
 }
